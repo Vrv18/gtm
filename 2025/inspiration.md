@@ -1,0 +1,13 @@
+- Cursor viral from Karpathy
+- Composio
+- Emergent
+- Sierra
+- ROX
+- HEX
+- Factory
+- Openrouter
+- Braintrust
+- Parallel Systems
+- Eleven Labs
+- Giga ML
+- Cartesia

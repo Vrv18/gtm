@@ -1,0 +1,6 @@
+- famous angels
+- investors 
+- friends from the ecosystem
+- new year party with customers - in SF & BLR
+- get company CTOs to invest who are our customers
+- state of ai report

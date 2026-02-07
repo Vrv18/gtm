@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "SlashCommand(/rory:*)",
+      "Bash(./bin/rory \"what does portkey stand for?\")",
+      "Read(//Users/spacemanspiff/.claude/skills/rory/**)",
+      "Bash(~/.claude/skills/rory/bin/rory \"what does portkey stand for?\")",
+      "Bash(~/.claude/skills/rory/bin/rory init rbo_82c1ab8c83fc1386363d9274adbb4ebf9b26b9ff51d2722645f6fb7626ae1fc7)",
+      "Bash(~/.claude/skills/rory/bin/rory status)",
+      "Bash(~/.claude/skills/rory/bin/rory \"what is our differentiator against azure ai foundry?\")",
+      "Bash(~/.claude/skills/rory/bin/rory \"create an image comparing Portkey vs Azure AI Foundry differentiators and save it in the current folder\")",
+      "Bash(~/.claude/skills/rory/bin/rory \"create a visual comparison chart for Portkey vs Azure AI Foundry showing our key differentiators\")",
+      "Bash(curl -o \"/Users/spacemanspiff/Documents/GitHub/gtm/portkey-vs-azure-comparison.jpeg\" \"https://yplefwwqpdgqjmpddriy.supabase.co/storage/v1/object/public/instant_agent_generations/2026/01/26/gemini_65904e78bb3c.jpeg\")"
     ],
     "deny": []
   }
