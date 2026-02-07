@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tasks</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    padding: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  header h1 { font-size: 24px; font-weight: 600; }
+  .header-actions { display: flex; gap: 8px; }
+  button {
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    border-radius: 6px;
+    padding: 6px 12px;
+    transition: background 0.15s;
+  }
+  .btn-secondary {
+    background: #e8e8ed;
+    color: #1d1d1f;
+  }
+  .btn-secondary:hover { background: #d2d2d7; }
+  .btn-primary {
+    background: #007aff;
+    color: #fff;
+  }
+  .btn-primary:hover { background: #0066d6; }
+  .btn-danger {
+    background: transparent;
+    color: #aaa;
+    padding: 4px 6px;
+    font-size: 16px;
+    line-height: 1;
+  }
+  .btn-danger:hover { color: #ff3b30; }
+  .btn-icon {
+    background: transparent;
+    color: #aaa;
+    padding: 4px 6px;
+    font-size: 14px;
+    line-height: 1;
+  }
+  .btn-icon:hover { color: #007aff; }
+
+  .category {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .category-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d1d1f;
+  }
+  .category-header-actions { display: flex; gap: 4px; }
+  .category-header input {
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-bottom: 2px solid #007aff;
+    outline: none;
+    font-family: inherit;
+    padding: 2px 0;
+    width: 200px;
+  }
+
+  .task {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 4px;
+    border-radius: 6px;
+    transition: background 0.1s;
+  }
+  .task:hover { background: #f5f5f7; }
+  .task.dragging { opacity: 0.4; }
+  .task.drag-over { border-top: 2px solid #007aff; }
+
+  .task input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #007aff;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .task .task-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.4;
+    cursor: grab;
+  }
+  .task .task-text.done {
+    text-decoration: line-through;
+    color: #aaa;
+  }
+  .task .task-edit-input {
+    flex: 1;
+    font-size: 14px;
+    border: none;
+    border-bottom: 2px solid #007aff;
+    outline: none;
+    font-family: inherit;
+    padding: 2px 0;
+  }
+  .task-actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .task:hover .task-actions { opacity: 1; }
+
+  .add-task-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .add-task-row input {
+    flex: 1;
+    border: 1px solid #d2d2d7;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+  }
+  .add-task-row input:focus { border-color: #007aff; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+  }
+
+  .drag-handle {
+    cursor: grab;
+    color: #ccc;
+    font-size: 14px;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .drag-handle:hover { color: #999; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>February Tasks</h1>
+  <div class="header-actions">
+    <button class="btn-secondary" onclick="reimportFromFile()">Re-import from tasks.md</button>
+    <button class="btn-primary" onclick="addCategory()">+ Category</button>
+  </div>
+</header>
+
+<div id="app"></div>
+
+<script>
+const STORAGE_KEY = 'tasks-february-2026';
+let data = []; // Array of { name: string, tasks: [{ text: string, done: boolean }] }
+
+// --- Markdown Parser ---
+function parseMarkdown(md) {
+  const lines = md.split('\n');
+  const categories = [];
+  let current = null;
+  for (const line of lines) {
+    const headingMatch = line.match(/^#+\s+(.+)/);
+    const taskMatch = line.match(/^-\s+(.+)/);
+    if (headingMatch) {
+      current = { name: headingMatch[1].trim(), tasks: [] };
+      categories.push(current);
+    } else if (taskMatch && current) {
+      current.tasks.push({ text: taskMatch[1].trim(), done: false });
+    } else if (taskMatch && !current) {
+      current = { name: 'Uncategorized', tasks: [] };
+      categories.push(current);
+      current.tasks.push({ text: taskMatch[1].trim(), done: false });
+    }
+  }
+  return categories;
+}
+
+// --- Persistence ---
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  render();
+}
+
+function load() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    try {
+      data = JSON.parse(stored);
+      render();
+      return true;
+    } catch (e) { /* fall through */ }
+  }
+  return false;
+}
+
+// --- Fetch tasks.md ---
+async function fetchTasks() {
+  try {
+    const res = await fetch('tasks.md');
+    if (!res.ok) throw new Error('Failed to fetch');
+    const md = await res.text();
+    data = parseMarkdown(md);
+    save();
+  } catch (e) {
+    document.getElementById('app').innerHTML =
+      '<div class="empty-state">Could not load tasks.md<br><small>Run <code>python3 -m http.server 8000</code> in this directory</small></div>';
+  }
+}
+
+async function reimportFromFile() {
+  if (confirm('This will replace all current tasks with the contents of tasks.md. Continue?')) {
+    await fetchTasks();
+  }
+}
+
+// --- CRUD ---
+function toggleTask(ci, ti) {
+  data[ci].tasks[ti].done = !data[ci].tasks[ti].done;
+  save();
+}
+
+function deleteTask(ci, ti) {
+  data[ci].tasks.splice(ti, 1);
+  save();
+}
+
+function addTask(ci, text) {
+  if (!text.trim()) return;
+  data[ci].tasks.push({ text: text.trim(), done: false });
+  save();
+}
+
+function startEditTask(ci, ti) {
+  const el = document.querySelector(`[data-ci="${ci}"][data-ti="${ti}"] .task-text`);
+  const actions = document.querySelector(`[data-ci="${ci}"][data-ti="${ti}"] .task-actions`);
+  const current = data[ci].tasks[ti].text;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'task-edit-input';
+  input.value = current;
+  el.replaceWith(input);
+  actions.style.display = 'none';
+  input.focus();
+  input.select();
+  const finish = () => {
+    const val = input.value.trim();
+    if (val && val !== current) {
+      data[ci].tasks[ti].text = val;
+      save();
+    } else {
+      render();
+    }
+  };
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') { input.value = current; input.blur(); }
+  });
+}
+
+function addCategory() {
+  const name = prompt('Category name:');
+  if (name && name.trim()) {
+    data.push({ name: name.trim(), tasks: [] });
+    save();
+  }
+}
+
+function renameCategory(ci) {
+  const h2 = document.querySelector(`[data-cat="${ci}"] h2`);
+  const current = data[ci].name;
+  const input = document.createElement('input');
+  input.value = current;
+  input.className = '';
+  Object.assign(input.style, {
+    fontSize: '16px', fontWeight: '600', border: 'none',
+    borderBottom: '2px solid #007aff', outline: 'none',
+    fontFamily: 'inherit', padding: '2px 0', width: '200px'
+  });
+  h2.replaceWith(input);
+  input.focus();
+  input.select();
+  const finish = () => {
+    const val = input.value.trim();
+    if (val && val !== current) {
+      data[ci].name = val;
+    }
+    save();
+  };
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') { input.value = current; input.blur(); }
+  });
+}
+
+function deleteCategory(ci) {
+  const cat = data[ci];
+  if (cat.tasks.length > 0) {
+    if (!confirm(`Delete "${cat.name}" and its ${cat.tasks.length} tasks?`)) return;
+  }
+  data.splice(ci, 1);
+  save();
+}
+
+// --- Drag & Drop ---
+let dragState = null;
+
+function onDragStart(e, ci, ti) {
+  dragState = { ci, ti };
+  e.target.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', '');
+}
+
+function onDragEnd(e) {
+  e.target.classList.remove('dragging');
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  dragState = null;
+}
+
+function onDragOver(e, ci, ti) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const taskEl = e.target.closest('.task');
+  if (taskEl) {
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    taskEl.classList.add('drag-over');
+  }
+}
+
+function onDrop(e, ci, ti) {
+  e.preventDefault();
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  if (!dragState) return;
+  const fromCi = dragState.ci;
+  const fromTi = dragState.ti;
+  if (fromCi === ci && fromTi === ti) return;
+
+  const task = data[fromCi].tasks.splice(fromTi, 1)[0];
+  // Adjust target index if moving within same category and source was before target
+  let targetTi = ti;
+  if (fromCi === ci && fromTi < ti) targetTi--;
+  data[ci].tasks.splice(targetTi, 0, task);
+  save();
+}
+
+// --- Render ---
+function render() {
+  const app = document.getElementById('app');
+  if (data.length === 0) {
+    app.innerHTML = '<div class="empty-state">No tasks loaded</div>';
+    return;
+  }
+
+  app.innerHTML = data.map((cat, ci) => `
+    <div class="category" data-cat="${ci}">
+      <div class="category-header">
+        <h2 ondblclick="renameCategory(${ci})">${esc(cat.name)}</h2>
+        <div class="category-header-actions">
+          <button class="btn-icon" onclick="renameCategory(${ci})" title="Rename">&#9998;</button>
+          <button class="btn-danger" onclick="deleteCategory(${ci})" title="Delete category">&times;</button>
+        </div>
+      </div>
+      ${cat.tasks.map((task, ti) => `
+        <div class="task" data-ci="${ci}" data-ti="${ti}"
+             draggable="true"
+             ondragstart="onDragStart(event,${ci},${ti})"
+             ondragend="onDragEnd(event)"
+             ondragover="onDragOver(event,${ci},${ti})"
+             ondrop="onDrop(event,${ci},${ti})">
+          <span class="drag-handle">&#8942;</span>
+          <input type="checkbox" ${task.done ? 'checked' : ''} onchange="toggleTask(${ci},${ti})">
+          <span class="task-text ${task.done ? 'done' : ''}">${esc(task.text)}</span>
+          <div class="task-actions">
+            <button class="btn-icon" onclick="startEditTask(${ci},${ti})" title="Edit">&#9998;</button>
+            <button class="btn-danger" onclick="deleteTask(${ci},${ti})" title="Delete">&times;</button>
+          </div>
+        </div>
+      `).join('')}
+      <div class="add-task-row">
+        <input type="text" placeholder="Add a task..." id="add-${ci}"
+               onkeydown="if(event.key==='Enter'){addTask(${ci},this.value);this.value='';}">
+        <button class="btn-secondary" onclick="const i=document.getElementById('add-${ci}');addTask(${ci},i.value);i.value='';">Add</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// --- Init ---
+if (!load()) fetchTasks();
+</script>
+</body>
+</html>

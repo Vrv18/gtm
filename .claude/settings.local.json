@@ -11,7 +11,9 @@
       "Bash(~/.claude/skills/rory/bin/rory \"what is our differentiator against azure ai foundry?\")",
       "Bash(~/.claude/skills/rory/bin/rory \"create an image comparing Portkey vs Azure AI Foundry differentiators and save it in the current folder\")",
       "Bash(~/.claude/skills/rory/bin/rory \"create a visual comparison chart for Portkey vs Azure AI Foundry showing our key differentiators\")",
-      "Bash(curl -o \"/Users/spacemanspiff/Documents/GitHub/gtm/portkey-vs-azure-comparison.jpeg\" \"https://yplefwwqpdgqjmpddriy.supabase.co/storage/v1/object/public/instant_agent_generations/2026/01/26/gemini_65904e78bb3c.jpeg\")"
+      "Bash(curl -o \"/Users/spacemanspiff/Documents/GitHub/gtm/portkey-vs-azure-comparison.jpeg\" \"https://yplefwwqpdgqjmpddriy.supabase.co/storage/v1/object/public/instant_agent_generations/2026/01/26/gemini_65904e78bb3c.jpeg\")",
+      "Bash(curl:*)",
+      "Bash(open:*)"
     ],
     "deny": []
   }

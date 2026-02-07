@@ -1,41 +1,7 @@
-- 26 Jan
-    - planning & booking
-    - PR firm finalization
-- 27 Jan
-    - Final calendar
-    - Agent gateway
-    - Post mortem
-- 28 Jan
-    - Finalize video
-- 29 Jan
-    - ...
-- 30 Jan
-    - Train    
-- 31 Jan
-    - Hyderabad
-- 1 Feb
-    - To SF
-- 9 Feb
-    - Series A launch
-- 15 Feb
-    - Return to Hyd
-- 17 Feb
-    - Up and running
-- 19 Feb
-    - Flight to Bhubaneshwar
-- 20 Feb
-    - Wedding
-- 21 & 22 Feb
-    - With friends
-- 23 Feb 
-    - Back to Blr
-
------
 Launchsquad
 OWLED
 Pallavi
 DRW
---
 Carsales Schedule
 Hitachi Energy
 Campaign plan
@@ -64,5 +30,4 @@ Devaki - Sales
 Drishti - Launch
 Sid - Support
 Kailash, Vasundhara - Take home assignment
--------
-
+ 
